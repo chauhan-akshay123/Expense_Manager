@@ -4,6 +4,7 @@ import com.akshay.expense_tracker.dto.request.LoginRequest;
 import com.akshay.expense_tracker.dto.request.RegisterRequest;
 import com.akshay.expense_tracker.dto.response.AuthResponse;
 import com.akshay.expense_tracker.entity.User;
+import com.akshay.expense_tracker.exception.BadRequestException;
 import com.akshay.expense_tracker.repository.UserRepository;
 import com.akshay.expense_tracker.security.JwtService;
 import com.akshay.expense_tracker.service.AuthService;
@@ -25,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("User already exists with this email");
+            throw new BadRequestException("User already exists");
         }
 
         User user = new User();

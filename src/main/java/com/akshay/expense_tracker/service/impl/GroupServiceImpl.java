@@ -7,6 +7,8 @@ import com.akshay.expense_tracker.entity.Group;
 import com.akshay.expense_tracker.entity.GroupMember;
 import com.akshay.expense_tracker.entity.User;
 import com.akshay.expense_tracker.enums.GroupRole;
+import com.akshay.expense_tracker.exception.BadRequestException;
+import com.akshay.expense_tracker.exception.ResourceNotFoundException;
 import com.akshay.expense_tracker.repository.GroupMemberRepository;
 import com.akshay.expense_tracker.repository.GroupRepository;
 import com.akshay.expense_tracker.repository.UserRepository;
@@ -69,7 +71,7 @@ public class GroupServiceImpl implements GroupService {
                 );
 
         if(!isAdmin){
-            throw new RuntimeException("Only admin can add members");
+            throw new BadRequestException("Only admin can add members");
         }
 
         boolean alreadyMember = groupMemberRepository
@@ -79,9 +81,7 @@ public class GroupServiceImpl implements GroupService {
                 );
 
         if(alreadyMember){
-            throw new RuntimeException(
-                    "User already exists in group"
-            );
+            throw new BadRequestException("User already exists in group");
         }
 
         User user = userRepository.findById(
@@ -91,7 +91,7 @@ public class GroupServiceImpl implements GroupService {
         ));
 
         Group group = groupRepository.findById(
-                groupId).orElseThrow(() -> new RuntimeException("Group not found"));
+                groupId).orElseThrow(() -> new ResourceNotFoundException("group npt found"));
 
         GroupMember groupMember = new GroupMember();
 

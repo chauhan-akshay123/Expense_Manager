@@ -2,6 +2,7 @@ package com.akshay.expense_tracker.controller;
 
 import com.akshay.expense_tracker.dto.request.LoginRequest;
 import com.akshay.expense_tracker.dto.request.RegisterRequest;
+import com.akshay.expense_tracker.dto.response.ApiResponse;
 import com.akshay.expense_tracker.dto.response.AuthResponse;
 import com.akshay.expense_tracker.service.AuthService;
 import jakarta.validation.Valid;
@@ -19,16 +20,31 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public AuthResponse register(
+    public ApiResponse<AuthResponse> register(
             @Valid @RequestBody RegisterRequest request
             ){
-        return authService.register(request);
+
+        return ApiResponse
+                .<AuthResponse>builder()
+                .success(true)
+                .message("User registered successfully")
+                .data(
+                        authService.register(request)
+                )
+                .build();
     }
 
     @PostMapping("/login")
-    public AuthResponse login(
+    public ApiResponse<AuthResponse> login(
             @Valid @RequestBody LoginRequest request
             ){
-        return authService.login(request);
+         return ApiResponse
+                 .<AuthResponse>builder()
+                 .success(true)
+                 .message("Logged in successfully")
+                 .data(
+                         authService.login(request)
+                 )
+                 .build();
     }
 }
