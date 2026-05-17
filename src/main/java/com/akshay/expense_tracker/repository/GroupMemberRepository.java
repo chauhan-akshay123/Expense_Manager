@@ -22,4 +22,6 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
             UUID userId,
             GroupRole role
     );
+
+    List<GroupMember> findByGroupId(UUID groupId);
 }

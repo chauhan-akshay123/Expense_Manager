@@ -29,5 +29,5 @@ public class CreateExpenseRequest {
     private UUID groupId;
 
     @NotNull
-    private List<UUID> participantIDs;
+    private List<UUID> participantIds;
 }
