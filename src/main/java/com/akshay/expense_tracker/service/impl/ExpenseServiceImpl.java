@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,6 +28,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     private final GroupMemberRepository groupMemberRepository;
     private final ExpenseSplitRepository expenseSplitRepository;
     private final UserRepository userRepository;
+    private final BalanceRepository balanceRepository;
 
     @Override
     @Transactional
@@ -114,6 +116,33 @@ public class ExpenseServiceImpl implements ExpenseService {
             split.setUser(participant);
             split.setAmount(splitAmount);
             expenseSplitRepository.save(split);
+
+            if(!participant.getId().equals(
+                    currentUser.getId()
+            )) {
+                Optional<Balance> existingBalance =
+                        balanceRepository.findByLenderIdAndBorrowerId(
+                                currentUser.getId(),
+                                participant.getId()
+                        );
+                if(existingBalance.isPresent()) {
+                    Balance balance =
+                            existingBalance.get();
+
+                    balance.setAmount(
+                            balance.getAmount()
+                                    .add(splitAmount)
+                    );
+
+                    balanceRepository.save(balance);
+                } else {
+                    Balance balance = new Balance();
+                    balance.setLender(currentUser);
+                    balance.setBorrower(participant);
+                    balance.setAmount(splitAmount);
+                    balanceRepository.save(balance);
+                }
+            }
         }
         return ExpenseResponse.builder()
                 .id(savedExpense.getId())

@@ -28,7 +28,7 @@ public class ExpenseController {
         return ApiResponse
                 .<ExpenseResponse>builder()
                 .success(true)
-                .message("Expense create successfully")
+                .message("Expense created successfully")
                 .data(
                         expenseService.createExpense(request)
                 )
