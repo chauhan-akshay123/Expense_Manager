@@ -120,12 +120,68 @@ public class ExpenseServiceImpl implements ExpenseService {
             if(!participant.getId().equals(
                     currentUser.getId()
             )) {
+
                 Optional<Balance> existingBalance =
-                        balanceRepository.findByLenderIdAndBorrowerId(
-                                currentUser.getId(),
-                                participant.getId()
+                        balanceRepository
+                                .findByLenderIdAndBorrowerId(
+                                        currentUser.getId(),
+                                        participant.getId()
+                                );
+
+                Optional<Balance> reverseBalance =
+                        balanceRepository
+                                .findByLenderIdAndBorrowerId(
+                                        participant.getId(),
+                                        currentUser.getId()
+                                );
+
+                // CASE 1 -> Reverse balance exists
+                if(reverseBalance.isPresent()) {
+
+                    Balance reverse =
+                            reverseBalance.get();
+
+                    BigDecimal updatedAmount =
+                            reverse.getAmount()
+                                    .subtract(splitAmount);
+
+                    // reverse balance still remains
+                    if(updatedAmount.compareTo(
+                            BigDecimal.ZERO
+                    ) > 0) {
+
+                        reverse.setAmount(updatedAmount);
+
+                        balanceRepository.save(reverse);
+
+                    }
+
+                    // direction changes
+                    else if(updatedAmount.compareTo(
+                            BigDecimal.ZERO
+                    ) < 0) {
+
+                        reverse.setLender(currentUser);
+
+                        reverse.setBorrower(participant);
+
+                        reverse.setAmount(
+                                updatedAmount.abs()
                         );
-                if(existingBalance.isPresent()) {
+
+                        balanceRepository.save(reverse);
+                    }
+
+                    // balance becomes zero
+                    else {
+
+                        balanceRepository.delete(reverse);
+                    }
+                }
+
+                // CASE 2 -> Existing balance exists
+                else if(existingBalance.isPresent()) {
+
                     Balance balance =
                             existingBalance.get();
 
@@ -135,11 +191,19 @@ public class ExpenseServiceImpl implements ExpenseService {
                     );
 
                     balanceRepository.save(balance);
-                } else {
+                }
+
+                // CASE 3 -> No balance exists
+                else {
+
                     Balance balance = new Balance();
+
                     balance.setLender(currentUser);
+
                     balance.setBorrower(participant);
+
                     balance.setAmount(splitAmount);
+
                     balanceRepository.save(balance);
                 }
             }
